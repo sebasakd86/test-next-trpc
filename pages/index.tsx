@@ -1,23 +1,60 @@
+import Loading from "@/components/loading";
 import { trpc } from "@/util/trpc";
 import { Inter } from "next/font/google";
+import { FormEvent, useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-	const numbers = [1, 2, 3, 4, 5, 6, 7];
-	const total = trpc.addNumbers.useQuery({ numbers });
-	if (!total.data)
+	// Testing only, no need to move the state and functions into hooks
+	const [numbers, setnumbers] = useState<number[]>([]);
+	const [number, setnumber] = useState<number>(0);
+	const total = trpc.addNumbers.useQuery({ numbers }, [numbers]);
+
+	const isInt = (value: unknown) => {
 		return (
-			<div className="w-screen h-screen flex z-50 items-center justify-center">
-				<span className="text-3xl">Loading...</span>
-			</div>
+			!isNaN(value) &&
+			parseInt(Number(value)) == value &&
+			!isNaN(parseInt(value, 10))
 		);
+	};
+
+	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+		e.stopPropagation();
+		e.preventDefault();
+		if (isInt(number)) {
+			setnumbers([...numbers, parseInt(number)]);
+			setnumber(0);
+		}
+	};
+
+	if (!total.data) return <Loading />;
+
 	return (
-		<main className="w-screen h-screen bg-white">
-			<span className="p-2 text-blue-600 ">
-				Sum of [{numbers.join(" , ")}] =&nbsp;
-			</span>
-			<span className="text-blue-800 font-bold">{total.data.result}</span>
+		<main className="w-screen h-screen bg-white p-4 flex flex-col gap-2">
+			<div className="stats shadow max-w-xs">
+				<div className="stat">
+					<div className="stat-title">[{numbers.join(" , ")}]</div>
+					<div className="stat-value">{total.data.result}</div>
+					<div className="stat-description">
+						Sum of every number on the list
+					</div>
+				</div>
+			</div>
+			<form onSubmit={handleSubmit} className="flex space-x-2 flex-row">
+				<input
+					type="text"
+					className={`input input-bordered ${
+						isInt(number) ? "input-success" : "input-error"
+					}`}
+					placeholder="Add number to the list.."
+					value={number}
+					onChange={(e) => setnumber(e.target.value)}
+				/>
+				<button className="btn btn-primary">
+					Add Number to the list
+				</button>
+			</form>
 		</main>
 	);
 }
