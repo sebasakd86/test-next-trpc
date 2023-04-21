@@ -10,6 +10,7 @@ export default function Home() {
 	const [numbers, setnumbers] = useState<number[]>([]);
 	const [number, setnumber] = useState<number>(0);
 	const total = trpc.addNumbers.useQuery({ numbers }, [numbers]);
+	const mutate = trpc.mutateSomething.useMutation();
 
 	const isInt = (value: unknown) => {
 		return (
@@ -23,6 +24,10 @@ export default function Home() {
 		e.stopPropagation();
 		e.preventDefault();
 		if (isInt(number)) {
+			mutate.mutate({
+				text: `Added ${number} to numbers`,
+				user: "John Doe",
+			});
 			setnumbers([...numbers, parseInt(number)]);
 			setnumber(0);
 		}

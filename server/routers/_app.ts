@@ -7,6 +7,19 @@ export const appRouter = router({
 		.query(({ input }) => ({
 			result: input.numbers.reduce((pv, cv) => pv + cv, 0),
 		})),
+	mutateSomething: procedure
+		.input(
+			z.object({
+				user: z.string(),
+				text: z.string(),
+			})
+		)
+		.mutation(({ input }) => {
+			console.info(`${input.user} -> ${input.text}`);
+			return {
+				ok: 1,
+			};
+		}),
 });
 
 // export type definition of API
